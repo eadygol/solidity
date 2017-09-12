@@ -33,24 +33,22 @@ REPO_ROOT=$(cd $(dirname "$0")/.. && pwd)
 cd $REPO_ROOT/build
 
 echo "Preparing solc-js..."
-rm -rf solc-js
-git clone https://github.com/ethereum/solc-js
+git clone --depth 1 https://github.com/ethereum/solc-js
 cd solc-js
 npm install
 
 # Replace soljson with current build
 echo "Replacing soljson.js"
-rm -f soljson.js
 # Make a copy because paths might not be absolute
 cp ../solc/soljson.js soljson.js
 
 # Update version (needed for some tests)
 VERSION=$(../../scripts/get_version.sh)
 echo "Updating package.json to version $VERSION"
-npm version $VERSION
+npm version --no-git-tag-version $VERSION
 
 echo "Running solc-js tests..."
 npm run test
 
 echo "Running external tests...."
-"$REPO_ROOT"/test/externalTests.sh "$REPO_ROOT"/build/solc/soljson.js
+"$REPO_ROOT/test/externalTests.sh" "$(pwd)/soljson.js"
